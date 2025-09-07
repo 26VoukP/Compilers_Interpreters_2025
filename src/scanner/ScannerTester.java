@@ -21,7 +21,7 @@ public class ScannerTester
 
     /**
      * The main method to run the ScannerTester.
-     * Precondition: The test file exists and is accessible.
+     * Precondition: The test file exists and is accessible. 
      * Postcondition: Tokens from the test file are printed to the console, or errors are reported.
      * @param args command-line arguments
      */

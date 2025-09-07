@@ -31,7 +31,6 @@ public class Scanner
     private final BufferedReader in;
     private char currentChar;
     private boolean eof;
-    // private int lineNumber;
 
     /**
      * Scanner constructor for construction of a scanner that 
@@ -47,7 +46,6 @@ public class Scanner
     {
         in = new BufferedReader(new InputStreamReader(inStream));
         eof = false;
-        // lineNumber = 1;
         getNextChar();
     }
     /**
@@ -92,7 +90,7 @@ public class Scanner
         }
     }
 
-    /**
+    /** 
      * Consumes the expected character from the input stream.
      * Precondition: currentChar matches the expected character.
      * Postcondition: currentChar is updated to the next character in the stream.
@@ -347,11 +345,12 @@ public class Scanner
         // Skip whitespace
         while (!eof && (isWhitespace(currentChar)))
         {
-            // if (currentChar == '\n') 
-            // {
-            //     lineNumber++;
-            // }
             eat(currentChar);
+            if (currentChar == '\n') 
+            {
+                // dollar sign is there so it can't be confused with a variable name
+                return "$NEWLINE";
+            }
         }
         if (eof)
         {
