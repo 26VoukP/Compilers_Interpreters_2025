@@ -1,13 +1,18 @@
 VAR x;
 PROCEDURE square(n);
 BEGIN
+/*
+This is a 
+/* nested
+*/ 
+multiline comment
+*/
 RETURN n * n;
 END;
 BEGIN
 x := 1;
 WHILE x <= 10 DO
 BEGIN
-// this is a // nested comment
 WRITELN(square(x));
 x := x + 1;
 END;

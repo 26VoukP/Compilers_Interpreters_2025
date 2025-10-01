@@ -21,3 +21,6 @@ target/
 
 # Ignore logs
 *.log
+
+# Ignore jflex which will not be used as scanner
+src/jflex/

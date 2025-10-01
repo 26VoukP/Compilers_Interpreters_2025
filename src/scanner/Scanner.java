@@ -31,6 +31,7 @@ public class Scanner
     private final BufferedReader in;
     private char currentChar;
     private boolean eof;
+    private int currentLine = 1; // Track the current line number
 
     /**
      * Scanner constructor for construction of a scanner that 
@@ -48,6 +49,7 @@ public class Scanner
         eof = false;
         getNextChar();
     }
+
     /**
      * Scanner constructor for constructing a scanner that 
      * scans a given input string.  
@@ -68,19 +70,23 @@ public class Scanner
      * Precondition: Input stream is open and readable.
      * Postcondition: currentChar is updated with the next character, or eof is set to true.
      */
-    private void getNextChar()
+    private void getNextChar() 
     {
         try 
         {
             int next = in.read();
-            if (next == -1 || (char) next == '.')
+            if (next == -1) 
             {
                 eof = true;
                 currentChar = '\0';
-            }
-            else
+            } 
+            else 
             {
                 currentChar = (char) next;
+                if (currentChar == '\n') 
+                {
+                    currentLine++;
+                }
             }
         } 
         catch (IOException e) 
@@ -97,15 +103,47 @@ public class Scanner
      * @param expected the character expected to be read
      * @throws ScanErrorException if the expected character does not match the current character
      */
-    private void eat(char expected) throws ScanErrorException
+    private void eat(char expected) throws ScanErrorException 
     {
-        if (expected != currentChar)
+        if (expected != currentChar) 
         {
             throw new ScanErrorException(
                 "Unexpected character read from input stream. Expected: "
                 + expected + " got: " + currentChar);
         }
         getNextChar();
+    }
+
+    /**
+     * Checks if the given character is a whitespace character.
+     * Precondition: None.
+     * Postcondition: Returns true if the character is whitespace, false otherwise.
+     * @param c the character to check
+     * @return true if the character is whitespace, false otherwise
+     */
+    public static boolean isWhitespace(char c)
+    {
+        char[] whitespaceCharacters = {' ', '\t', '\r', '\n'}; 
+        for (char ws : whitespaceCharacters) 
+        {
+            if (c == ws) 
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Scans input stream and returns special character.
+     * Precondition: None.
+     * Postcondition: Returns whether the current character is a special character.
+     * @return String of special character
+     */
+    private static boolean isSpecialChar(char c)
+    {
+        String specialChars = ";,";
+        return specialChars.indexOf(c) != -1;
     }
 
     /**
@@ -141,7 +179,7 @@ public class Scanner
      */
     public static boolean isOperand(char c) 
     {
-        char[] operands = {'=', '+', '-', '*', '/', '%', '(', ')', '<', '>', ':'}; 
+        char[] operands = {'=', '+', '-', '*', '/', '%', '(', ')', '<', '>', ':', ';'}; 
         for (char o : operands) 
         {
             if (c == o) 
@@ -205,26 +243,6 @@ public class Scanner
         {
             throw new ScanErrorException("Incorrect comment header passed to comment remover.");
         }
-    }
-
-    /**
-     * Checks if the given character is a whitespace character.
-     * Precondition: None.
-     * Postcondition: Returns true if the character is whitespace, false otherwise.
-     * @param c the character to check
-     * @return true if the character is whitespace, false otherwise
-     */
-    public static boolean isWhitespace(char c)
-    {
-        char[] whitespaceCharacters = {' ', '\t', '\r', '\n'}; 
-        for (char ws : whitespaceCharacters) 
-        {
-            if (c == ws) 
-            {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -329,7 +347,7 @@ public class Scanner
      */
     public boolean hasNext()
     {
-        return !eof;
+        return !eof && currentChar != '.';
     }
 
     /**
@@ -340,50 +358,48 @@ public class Scanner
      * @return the next token as a String
      * @throws ScanErrorException if an unexpected character is encountered
      */
-    public String nextToken() throws ScanErrorException
+    public java.util.AbstractMap.SimpleEntry<String, Integer> nextToken() throws ScanErrorException 
     {
         // Skip whitespace
-        while (!eof && (isWhitespace(currentChar)))
+        while (!eof && isWhitespace(currentChar)) 
         {
             eat(currentChar);
-            if (currentChar == '\n') 
-            {
-                // dollar sign is there so it can't be confused with a variable name
-                return "$NEWLINE";
-            }
         }
-        if (eof)
+
+        if (!hasNext()) 
         {
-            return "EOF";
+            return new java.util.AbstractMap.SimpleEntry<>("EOF", currentLine);
         }
-        if (currentChar == ';')
+
+        if (isSpecialChar(currentChar))
         {
-            eat(currentChar);
-            return ";";
+            eat(currentChar); // Doesn't follow the usual pattern, because we want to return special chars one at a time
+            return new java.util.AbstractMap.SimpleEntry<>(String.valueOf(currentChar), currentLine);
         }
-        if (isOperand(currentChar))
+
+        if (isOperand(currentChar)) 
         {
             String scannedOperand = scanOperand();
-            if (isCommentHeader(scannedOperand))
+            if (isCommentHeader(scannedOperand)) 
             {
                 removeInputStreamComment(scannedOperand);
                 return nextToken();
             }
-            return scannedOperand;
+            return new java.util.AbstractMap.SimpleEntry<>(scannedOperand, currentLine);
         }
-        if (isDigit(currentChar))
+
+        if (isDigit(currentChar)) 
         {
-            return scanNumber();
+            return new java.util.AbstractMap.SimpleEntry<>(scanNumber(), currentLine);
         }
-        else if (isLetter(currentChar))
+
+        if (isLetter(currentChar)) 
         {
-            return scanIdentifier();
+            return new java.util.AbstractMap.SimpleEntry<>(scanIdentifier(), currentLine);
         }
-        else
-        {
-            throw new ScanErrorException(
-                "Unrecognized character " + currentChar + " while getting next token"
-            );
-        }
+
+        throw new ScanErrorException(
+            "Unrecognized character " + currentChar + " while getting next token"
+        );
     }
 }

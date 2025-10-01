@@ -38,7 +38,7 @@ public class ScannerTester
             {
                 try 
                 {
-                    String token = scanner.nextToken();
+                    String token = scanner.nextToken().getKey();
                     System.out.println("Token found: " + token);
                 } 
                 catch (ScanErrorException e) 
