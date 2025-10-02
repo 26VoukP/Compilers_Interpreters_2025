@@ -6,7 +6,7 @@ This is a
 /* nested
 */ 
 multiline comment
-*/
+*/ 
 RETURN n * n;
 END;
 BEGIN

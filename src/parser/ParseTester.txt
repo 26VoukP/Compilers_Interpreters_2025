@@ -1,0 +1,9 @@
+BEGIN
+    WRITELN((6 + 3 * 5));
+    WRITELN(-3 + 5 * 2);
+    var := 5;
+    BEGIN
+        WRITELN(var + 5 / 2);
+    END;
+END;
+.

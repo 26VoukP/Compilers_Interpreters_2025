@@ -1,8 +1,7 @@
 package scanner;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 
 /**
  * A Scanner is responsible for reading an input stream, one character at a
@@ -32,6 +31,11 @@ public class Scanner
     private char currentChar;
     private boolean eof;
     private int currentLine = 1; // Track the current line number
+    public static final String IDENTIFIER = "identifier";
+    public static final String NUMBER = "number";
+    public static final String OPERATOR = "operator";
+    public static final String SPECIAL = "special";
+    public static final String EOF = "EOF";
 
     /**
      * Scanner constructor for construction of a scanner that 
@@ -142,7 +146,7 @@ public class Scanner
      */
     private static boolean isSpecialChar(char c)
     {
-        String specialChars = ";,";
+        String specialChars = "();,";
         return specialChars.indexOf(c) != -1;
     }
 
@@ -179,7 +183,7 @@ public class Scanner
      */
     public static boolean isOperand(char c) 
     {
-        char[] operands = {'=', '+', '-', '*', '/', '%', '(', ')', '<', '>', ':', ';'}; 
+        char[] operands = {'=', '+', '-', '*', '/', '%', '<', '>', ':'}; 
         for (char o : operands) 
         {
             if (c == o) 
@@ -215,8 +219,7 @@ public class Scanner
         if (commmentHeaderToken.equals("//"))
         {
             while (currentChar != '\n')
-            {
-                
+            {        
                 eat(currentChar);
             }
         }
@@ -358,7 +361,7 @@ public class Scanner
      * @return the next token as a String
      * @throws ScanErrorException if an unexpected character is encountered
      */
-    public java.util.AbstractMap.SimpleEntry<String, Integer> nextToken() throws ScanErrorException 
+    public AbstractMap.SimpleEntry<String, AbstractMap.SimpleEntry<String, Integer>> nextToken() throws ScanErrorException 
     {
         // Skip whitespace
         while (!eof && isWhitespace(currentChar)) 
@@ -368,13 +371,14 @@ public class Scanner
 
         if (!hasNext()) 
         {
-            return new java.util.AbstractMap.SimpleEntry<>("EOF", currentLine);
+            return new AbstractMap.SimpleEntry<>(Scanner.EOF, new AbstractMap.SimpleEntry<>("special", currentLine));
         }
 
-        if (isSpecialChar(currentChar))
+        if (isSpecialChar(currentChar)) 
         {
-            eat(currentChar); // Doesn't follow the usual pattern, because we want to return special chars one at a time
-            return new java.util.AbstractMap.SimpleEntry<>(String.valueOf(currentChar), currentLine);
+            char c = currentChar;
+            eat(currentChar);
+            return new AbstractMap.SimpleEntry<>(String.valueOf(c), new AbstractMap.SimpleEntry<>("special", currentLine));
         }
 
         if (isOperand(currentChar)) 
@@ -385,17 +389,17 @@ public class Scanner
                 removeInputStreamComment(scannedOperand);
                 return nextToken();
             }
-            return new java.util.AbstractMap.SimpleEntry<>(scannedOperand, currentLine);
+            return new AbstractMap.SimpleEntry<>(scannedOperand, new AbstractMap.SimpleEntry<>(Scanner.OPERATOR, currentLine));
         }
 
         if (isDigit(currentChar)) 
         {
-            return new java.util.AbstractMap.SimpleEntry<>(scanNumber(), currentLine);
+            return new AbstractMap.SimpleEntry<>(scanNumber(), new AbstractMap.SimpleEntry<>(Scanner.NUMBER, currentLine));
         }
 
         if (isLetter(currentChar)) 
         {
-            return new java.util.AbstractMap.SimpleEntry<>(scanIdentifier(), currentLine);
+            return new AbstractMap.SimpleEntry<>(scanIdentifier(), new AbstractMap.SimpleEntry<>(Scanner.IDENTIFIER, currentLine));
         }
 
         throw new ScanErrorException(
