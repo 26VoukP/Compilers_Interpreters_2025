@@ -7,6 +7,9 @@ import scanner.Scanner;
 /**
  * The Parser class is responsible for parsing tokens provided by the Scanner.
  * It validates the syntax of the input and provides methods to parse specific constructs.
+ * 
+ * @author Vouk Praun-Petrovic
+ * @version October 2, 2025
  */
 public class Parser {
     private String lexeme; // The current lexeme being processed
@@ -160,6 +163,14 @@ public class Parser {
         {
             scanDefinition();
         }
+        else if (lexeme.equals(Scanner.EOF))
+        {
+            return; // End of file reached, nothing to parse
+        }
+        else 
+        {
+            throw new ParseErrorException("Unexpected token: " + lexeme + " at line " + lineNumber);
+        }
     }
 
     /**
@@ -223,6 +234,9 @@ public class Parser {
     /**
      * Parses a term, which is a factor followed by zero or more multiplication or division operators and factors.
      *
+     * Precondition: The current lexeme is the start of a valid term.
+     * Postcondition: The term is parsed, and the lexeme is advanced past the term.
+     *
      * @return the parsed term
      * @throws ParseErrorException if the syntax of the term is invalid
      */
@@ -265,7 +279,7 @@ public class Parser {
      * Parses a factor, which can be a number, an identifier, or a parenthesized expression.
      *
      * Precondition: The current lexeme is the start of a valid factor.
-     * Postcondition: The factor is parsed and the lexeme is advanced.
+     * Postcondition: The factor is parsed, and the lexeme is advanced past the factor.
      *
      * @return the parsed factor
      * @throws ParseErrorException if the syntax of the factor is invalid
@@ -309,31 +323,5 @@ public class Parser {
         {
             throw new ParseErrorException("Unexpected token: " + lexeme + " at line " + lineNumber);
         }
-    }
-
-    /**
-     * Parses the entire input file, processing statements until the end of the file is reached.
-     *
-     * Precondition: None.
-     * Postcondition: The input file is parsed and all statements are processed.
-     *
-     * @throws ParseErrorException if the syntax of the file is invalid
-     */
-    public void parseFile() throws ParseErrorException
-    {
-        while (!isEOF())
-        {
-            parseStatement();
-        }
-    }   
-
-    /**
-     * Checks if the end of the file has been reached.
-     *
-     * @return true if the end of the file has been reached, false otherwise
-     */
-    public boolean isEOF()
-    {
-        return lexeme.equals("EOF");
     }
 }

@@ -6,9 +6,20 @@ import scanner.Scanner;
 
 /**
  * A tester class for the Parser.
+ * 
+ * @author Vouk Praun-Petrovic
+ * @version October 2, 2025
  */
 public class ParserTester 
 {
+    /**
+     * Main method to test the Parser with a sample input file.
+     * 
+     * precondition: The file "src/parser/ParseTester.txt" exists and is readable.
+     * postcondition: The Parser is tested with the input from the file.
+     * 
+     * @param args command line arguments
+     */
     public static void main(String[] args) 
     {
         Scanner scanner;
