@@ -14,7 +14,8 @@ public class Parser {
     private java.util.AbstractMap.SimpleEntry<String, java.util.AbstractMap.SimpleEntry<String, Integer>> token; // The current token
     private int lineNumber; // The current line number
     private Scanner scanner; // The Scanner instance providing tokens
-    public Map<String, Integer> varTable;
+    private Map<String, Integer> varTable;
+    private static final String STATEMENT_TERMINATOR = ";";
 
     /**
      * Constructs a Parser with the given Scanner.
@@ -149,35 +150,74 @@ public class Parser {
     public void parseStatement() throws ParseErrorException {
         if (lexeme.equals("BEGIN"))  
         {
-            eat("BEGIN");
-            while (!lexeme.equals("END"))
-            {
-                parseStatement(); 
-            }
-            eat("END");
-            eat(";");
+            scanProgram();
         }
         else if (lexeme.equals("WRITELN")) 
         {
-            eat("WRITELN");
-            eat("(");
-            System.out.println(parseTerm());
-            eat(")");
-            eat(";");
+            scanPrintStatement();
         }
         else if (lexemeType.equals(Scanner.IDENTIFIER)) // Checks for a scanned token that has an identifier but isn't WRITELN
         {
-            String varName = lexeme;
-            eat(lexeme);
-            eat(":=");
-            int value = parseTerm();
-            if (varTable == null) 
-            {
-                varTable = new HashMap<>();
-            }
-            varTable.put(varName, value);
-            eat(";");
+            scanDefinition();
         }
+    }
+
+    /**
+     * Parses a program enclosed between BEGIN and END.
+     *
+     * Precondition: The current lexeme is "BEGIN".
+     * Postcondition: The program is parsed, and the lexeme is advanced past "END" and the statement terminator.
+     *
+     * @throws ParseErrorException if the syntax of the program is invalid
+     */
+    private void scanProgram() throws ParseErrorException
+    {
+        eat("BEGIN");
+        while (!lexeme.equals("END"))
+        {
+            parseStatement(); 
+        }
+        eat("END");
+        eat(STATEMENT_TERMINATOR);
+    }
+
+    /**
+     * Parses a print statement of the form WRITELN(expression).
+     *
+     * Precondition: The current lexeme is "WRITELN".
+     * Postcondition: The print statement is parsed, and the lexeme is advanced past the statement terminator.
+     *
+     * @throws ParseErrorException if the syntax of the print statement is invalid
+     */
+    private void scanPrintStatement() throws ParseErrorException
+    {
+        eat("WRITELN");
+        eat("(");
+        System.out.println(parseTerm());
+        eat(")");
+        eat(STATEMENT_TERMINATOR);
+    }
+
+    /**
+     * Parses a variable definition of the form identifier := expression.
+     *
+     * Precondition: The current lexeme is an identifier.
+     * Postcondition: The variable is added to the variable table with its value, and the lexeme is advanced past the statement terminator.
+     *
+     * @throws ParseErrorException if the syntax of the variable definition is invalid
+     */
+    private void scanDefinition() throws ParseErrorException
+    {
+        String varName = lexeme;
+        eat(lexeme);
+        eat(":=");
+        int value = parseTerm();
+        if (varTable == null) 
+        {
+            varTable = new HashMap<>();
+        }
+        varTable.put(varName, value);
+        eat(STATEMENT_TERMINATOR);
     }
 
     /**
