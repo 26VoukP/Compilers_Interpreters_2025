@@ -41,7 +41,8 @@ public class ParserTester
         } 
         catch (ParseErrorException e) 
         {
-            System.err.println("Parse error at line " + parser.getLineNumber() + ": " + e.getMessage());
+            System.err.println("Parse error at line " + parser.getLineNumber() + 
+                    ": " + e.getMessage());
         }
     }
 }

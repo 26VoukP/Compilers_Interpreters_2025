@@ -11,10 +11,12 @@ import scanner.Scanner;
  * @author Vouk Praun-Petrovic
  * @version October 2, 2025
  */
-public class Parser {
+public class Parser 
+{
     private String lexeme; // The current lexeme being processed
     private String lexemeType; // The type of the current lexeme
-    private java.util.AbstractMap.SimpleEntry<String, java.util.AbstractMap.SimpleEntry<String, Integer>> token; // The current token
+    private AbstractMap.SimpleEntry<String, 
+            java.util.AbstractMap.SimpleEntry<String, Integer>> token;
     private int lineNumber; // The current line number
     private Scanner scanner; // The Scanner instance providing tokens
     private Map<String, Integer> varTable;
@@ -31,9 +33,12 @@ public class Parser {
     public Parser(Scanner s) 
     {
         this.scanner = s;
-        try {
+        try 
+        {
             this.token = scanner.nextToken();
-        } catch (ScanErrorException e) {
+        } 
+        catch (ScanErrorException e) 
+        {
             System.err.println("ScanErrorException: " + e.getMessage());
             System.exit(1); // Exit the program with a non-zero status
         }
@@ -68,7 +73,8 @@ public class Parser {
     {
         if (!lexeme.equals(expectedLexeme)) 
         {
-            throw new IllegalArgumentException("Expected lexeme: " + expectedLexeme + ", but found: " + lexeme);
+            throw new IllegalArgumentException("Expected: " + expectedLexeme 
+                    + ", found: " + lexeme);
         }
 
         try 
@@ -77,7 +83,9 @@ public class Parser {
             this.lineNumber = token.getValue().getValue();
             this.lexeme = token.getKey();
             this.lexemeType = token.getValue().getKey();
-        } catch (ScanErrorException e) {
+        } 
+        catch (ScanErrorException e) 
+        {
             System.err.println("ScanErrorException: " + e.getMessage());
             System.exit(1); // Exit the program with a non-zero status
         }
@@ -110,7 +118,11 @@ public class Parser {
      * @param condition a predicate to test the lexeme
      * @throws ParseErrorException if the condition is not satisfied
      */
-    public void checkExpectedLexeme(String expectedLexeme, java.util.function.Predicate<String> condition) throws ParseErrorException {
+    public void checkExpectedLexeme(
+            String expectedLexeme, 
+            java.util.function.Predicate<String> condition
+    ) throws ParseErrorException 
+    {
         if (!condition.test(lexeme)) 
         {
             throw new ParseErrorException("Unexpected token: " + lexeme + " at line " + lineNumber);
@@ -133,8 +145,10 @@ public class Parser {
         try 
         {
             number = Integer.parseInt(lexeme);
-        } catch (NumberFormatException e) {
-            throw new ParseErrorException("Invalid number format: " + lexeme + " at line " + lineNumber, e);
+        } 
+        catch (NumberFormatException e) 
+        {
+            throw new ParseErrorException("Invalid number: " + lexeme + " at line " + lineNumber);
         }
         eat(lexeme);
         return number;
@@ -159,7 +173,7 @@ public class Parser {
         {
             scanPrintStatement();
         }
-        else if (lexemeType.equals(Scanner.IDENTIFIER)) // Checks for a scanned token that has an identifier but isn't WRITELN
+        else if (lexemeType.equals(Scanner.IDENTIFIER))
         {
             scanDefinition();
         }
@@ -177,7 +191,8 @@ public class Parser {
      * Parses a program enclosed between BEGIN and END.
      *
      * Precondition: The current lexeme is "BEGIN".
-     * Postcondition: The program is parsed, and the lexeme is advanced past "END" and the statement terminator.
+     * Postcondition: The program is parsed, and the lexeme is advanced past 
+     * "END" and the statement terminator.
      *
      * @throws ParseErrorException if the syntax of the program is invalid
      */
@@ -196,7 +211,8 @@ public class Parser {
      * Parses a print statement of the form WRITELN(expression).
      *
      * Precondition: The current lexeme is "WRITELN".
-     * Postcondition: The print statement is parsed, and the lexeme is advanced past the statement terminator.
+     * Postcondition: The print statement is parsed, and the lexeme is 
+     * advanced past the statement terminator.
      *
      * @throws ParseErrorException if the syntax of the print statement is invalid
      */
@@ -213,7 +229,8 @@ public class Parser {
      * Parses a variable definition of the form identifier := expression.
      *
      * Precondition: The current lexeme is an identifier.
-     * Postcondition: The variable is added to the variable table with its value, and the lexeme is advanced past the statement terminator.
+     * Postcondition: The variable is added to the variable table with its value, and the lexeme is
+     * advanced past the statement terminator.
      *
      * @throws ParseErrorException if the syntax of the variable definition is invalid
      */
@@ -232,7 +249,8 @@ public class Parser {
     }
 
     /**
-     * Parses a term, which is a factor followed by zero or more multiplication or division operators and factors.
+     * Parses a term, which is a factor followed by zero or more multiplication or 
+     * division operators and factors.
      *
      * Precondition: The current lexeme is the start of a valid term.
      * Postcondition: The term is parsed, and the lexeme is advanced past the term.
@@ -245,35 +263,30 @@ public class Parser {
         int result = parseFactor();
         while (true)
         {
-            switch (lexeme) 
-            {
-                case "*" -> 
-                {
+            switch (lexeme) {
+                case "*" -> {
                     eat(lexeme);
                     result *= parseFactor();
                 }
-                case "/" -> 
-                {
+                case "/" -> {
                     eat(lexeme);
                     result /= parseFactor();
                 }
-                case "+" -> 
-                {
+                case "+" -> {
                     eat(lexeme);
                     result += parseTerm();
                 }
-                case "-" -> 
-                {
+                case "-" -> {
                     eat(lexeme);
                     result -= parseTerm();
                 }
-                default -> 
-                {
+                default -> {
                     return result;
                 }
             }
         }
     }
+
 
     /**
      * Parses a factor, which can be a number, an identifier, or a parenthesized expression.
@@ -306,7 +319,8 @@ public class Parser {
             } 
             else 
             {
-                throw new ParseErrorException("Undefined variable: " + varName + " at line " + lineNumber);
+                throw new ParseErrorException("Undefined variable: " 
+                        + varName + " at line " + lineNumber);
             }
         }
         else if (lexemeType.equals(Scanner.NUMBER))
