@@ -28,7 +28,8 @@ public class Parser {
      *
      * @param s the Scanner instance to use for tokenizing input
      */
-    public Parser(Scanner s) {
+    public Parser(Scanner s) 
+    {
         this.scanner = s;
         try {
             this.token = scanner.nextToken();
@@ -49,7 +50,8 @@ public class Parser {
      *
      * @return the current line number
      */
-    public int getLineNumber() {
+    public int getLineNumber() 
+    {
         return lineNumber;
     }
 
@@ -62,12 +64,15 @@ public class Parser {
      * @param expectedLexeme the lexeme expected to be consumed
      * @throws IllegalArgumentException if the expected lexeme does not match the current lexeme
      */
-    private void eat(String expectedLexeme) throws IllegalArgumentException {
-        if (!lexeme.equals(expectedLexeme)) {
+    private void eat(String expectedLexeme) throws IllegalArgumentException 
+    {
+        if (!lexeme.equals(expectedLexeme)) 
+        {
             throw new IllegalArgumentException("Expected lexeme: " + expectedLexeme + ", but found: " + lexeme);
         }
 
-        try {
+        try 
+        {
             this.token = scanner.nextToken();
             this.lineNumber = token.getValue().getValue();
             this.lexeme = token.getKey();
@@ -87,8 +92,10 @@ public class Parser {
      * @param expectedLexeme the expected lexeme
      * @throws ParseErrorException if the current lexeme does not match the expected lexeme
      */
-    public void checkExpectedLexeme(String expectedLexeme) throws ParseErrorException {
-        if (!lexeme.equals(expectedLexeme)) {
+    public void checkExpectedLexeme(String expectedLexeme) throws ParseErrorException 
+    {
+        if (!lexeme.equals(expectedLexeme)) 
+        {
             throw new ParseErrorException("Unexpected token: " + lexeme + " at line " + lineNumber);
         }
     }
@@ -104,21 +111,10 @@ public class Parser {
      * @throws ParseErrorException if the condition is not satisfied
      */
     public void checkExpectedLexeme(String expectedLexeme, java.util.function.Predicate<String> condition) throws ParseErrorException {
-        if (!condition.test(lexeme)) {
+        if (!condition.test(lexeme)) 
+        {
             throw new ParseErrorException("Unexpected token: " + lexeme + " at line " + lineNumber);
         }
-    }
-
-    /**
-     * Parses an IF statement.
-     *
-     * Precondition: The current lexeme is "IF".
-     * Postcondition: The "IF" statement is parsed and the lexeme is advanced.
-     *
-     * @throws ParseErrorException if the syntax of the IF statement is invalid
-     */
-    public void parseIF() throws ParseErrorException {
-        eat("IF");
     }
 
     /**
@@ -130,10 +126,12 @@ public class Parser {
      * @return the parsed number
      * @throws ParseErrorException if the current lexeme is not a valid number
      */
-    private int parseNumber() throws ParseErrorException {
+    private int parseNumber() throws ParseErrorException 
+    {
         int number;
 
-        try {
+        try 
+        {
             number = Integer.parseInt(lexeme);
         } catch (NumberFormatException e) {
             throw new ParseErrorException("Invalid number format: " + lexeme + " at line " + lineNumber, e);
@@ -142,15 +140,17 @@ public class Parser {
         return number;
     }
 
+
     /**
-     * Parses a statement.
-     *
+     * Parses a statement, which can be a program, print statement, or variable definition.
+     * 
      * Precondition: The current lexeme is the start of a valid statement.
-     * Postcondition: The statement is parsed and the lexeme is advanced.
+     * Postcondition: The statement is parsed, and the lexeme is advanced past the statement
      *
      * @throws ParseErrorException if the syntax of the statement is invalid
      */
-    public void parseStatement() throws ParseErrorException {
+    public void parseStatement() throws ParseErrorException 
+    {
         if (lexeme.equals("BEGIN"))  
         {
             scanProgram();
@@ -165,7 +165,7 @@ public class Parser {
         }
         else if (lexeme.equals(Scanner.EOF))
         {
-            return; // End of file reached, nothing to parse
+            // End of file reached, nothing to parse
         }
         else 
         {
