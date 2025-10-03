@@ -31,10 +31,25 @@ public class Scanner
     private char currentChar;
     private boolean eof;
     private int currentLine = 1; // Track the current line number
+    /**
+     * The string that is passed in the token when the scanner finds an identifier
+     */
     public static final String IDENTIFIER = "identifier";
+    /**
+     * The string that is passed in the token when the scanner finds a number
+     */
     public static final String NUMBER = "number";
+    /**
+     * The string that is passed in the token when the scanner finds am operator
+     */
     public static final String OPERATOR = "operator";
+    /**
+     * The string that is passed in the token when the scanner finds a special character
+     */
     public static final String SPECIAL = "special";
+    /**
+     * The EOF lexeme
+     */
     public static final String EOF = "EOF";
 
     /**
@@ -361,7 +376,8 @@ public class Scanner
      * @return the next token as a String
      * @throws ScanErrorException if an unexpected character is encountered
      */
-    public AbstractMap.SimpleEntry<String, AbstractMap.SimpleEntry<String, Integer>> nextToken() throws ScanErrorException 
+    public AbstractMap.SimpleEntry<String, AbstractMap.SimpleEntry<String, Integer>> 
+            nextToken() throws ScanErrorException 
     {
         // Skip whitespace
         while (!eof && isWhitespace(currentChar)) 
@@ -371,14 +387,16 @@ public class Scanner
 
         if (!hasNext()) 
         {
-            return new AbstractMap.SimpleEntry<>(Scanner.EOF, new AbstractMap.SimpleEntry<>("special", currentLine));
+            return new AbstractMap.SimpleEntry<>
+            (Scanner.EOF, new AbstractMap.SimpleEntry<>("special", currentLine));
         }
 
         if (isSpecialChar(currentChar)) 
         {
             char c = currentChar;
             eat(currentChar);
-            return new AbstractMap.SimpleEntry<>(String.valueOf(c), new AbstractMap.SimpleEntry<>("special", currentLine));
+            return new AbstractMap.SimpleEntry<>
+            (String.valueOf(c), new AbstractMap.SimpleEntry<>("special", currentLine));
         }
 
         if (isOperand(currentChar)) 
@@ -389,17 +407,20 @@ public class Scanner
                 removeInputStreamComment(scannedOperand);
                 return nextToken();
             }
-            return new AbstractMap.SimpleEntry<>(scannedOperand, new AbstractMap.SimpleEntry<>(Scanner.OPERATOR, currentLine));
+            return new AbstractMap.SimpleEntry<>
+            (scannedOperand, new AbstractMap.SimpleEntry<>(Scanner.OPERATOR, currentLine));
         }
 
         if (isDigit(currentChar)) 
         {
-            return new AbstractMap.SimpleEntry<>(scanNumber(), new AbstractMap.SimpleEntry<>(Scanner.NUMBER, currentLine));
+            return new AbstractMap.SimpleEntry<>
+            (scanNumber(), new AbstractMap.SimpleEntry<>(Scanner.NUMBER, currentLine));
         }
 
         if (isLetter(currentChar)) 
         {
-            return new AbstractMap.SimpleEntry<>(scanIdentifier(), new AbstractMap.SimpleEntry<>(Scanner.IDENTIFIER, currentLine));
+            return new AbstractMap.SimpleEntry<>
+            (scanIdentifier(), new AbstractMap.SimpleEntry<>(Scanner.IDENTIFIER, currentLine));
         }
 
         throw new ScanErrorException(

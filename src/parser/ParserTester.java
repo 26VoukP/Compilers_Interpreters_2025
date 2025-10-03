@@ -37,7 +37,7 @@ public class ParserTester
         Parser parser = new Parser(scanner);
         try 
         {
-            parser.parseStatement();
+            parser.parseFile();
         } 
         catch (ParseErrorException e) 
         {

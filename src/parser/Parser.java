@@ -261,26 +261,32 @@ public class Parser
     public int parseTerm() throws ParseErrorException
     {
         int result = parseFactor();
-        while (true)
+        while (true) 
         {
-            switch (lexeme) {
-                case "*" -> {
+            switch (lexeme) 
+            {
+                case "*" -> 
+                {
                     eat(lexeme);
                     result *= parseFactor();
                 }
-                case "/" -> {
+                case "/" -> 
+                {
                     eat(lexeme);
                     result /= parseFactor();
                 }
-                case "+" -> {
+                case "+" -> 
+                {
                     eat(lexeme);
                     result += parseTerm();
                 }
-                case "-" -> {
+                case "-" -> 
+                {
                     eat(lexeme);
                     result -= parseTerm();
                 }
-                default -> {
+                default -> 
+                {
                     return result;
                 }
             }
@@ -338,4 +344,34 @@ public class Parser
             throw new ParseErrorException("Unexpected token: " + lexeme + " at line " + lineNumber);
         }
     }
+
+    /**
+     * Checks if there are more tokens to parse.
+     *
+     * Precondition: None.
+     * Postcondition: Returns true if the current lexeme is not EOF, false otherwise.
+     *
+     * @return true if there are more tokens, false otherwise
+     */
+    public boolean hasMoreTokens()
+    {
+        return !lexeme.equals(Scanner.EOF);
+    }
+
+    /**
+     * Parses the entire file by repeatedly parsing statements until EOF is reached.
+     *
+     * Precondition: The file contains valid syntax.
+     * Postcondition: All statements in the file are parsed.
+     *
+     * @throws ParseErrorException if the syntax of any statement is invalid
+     */
+    public void parseFile() throws ParseErrorException
+    {
+        while (hasMoreTokens())
+        {
+            parseStatement();
+        }
+    }
 }
+

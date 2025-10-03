@@ -2,6 +2,9 @@ package parser;
 
 /**
  * Custom exception class for handling parsing-specific errors.
+ * 
+ * @author Vouk Praun-Petrovic
+ * @version October 2, 2025
  */
 public class ParseErrorException extends Exception 
 {
