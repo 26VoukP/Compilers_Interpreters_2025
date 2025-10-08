@@ -15,9 +15,7 @@ public class Parser
 {
     private String lexeme; // The current lexeme being processed
     private String lexemeType; // The type of the current lexeme
-    private AbstractMap.SimpleEntry<String, 
-            java.util.AbstractMap.SimpleEntry<String, Integer>> token;
-    private int lineNumber; // The current line number
+    private AbstractMap.SimpleEntry<String, String> token;
     private Scanner scanner; // The Scanner instance providing tokens
     private Map<String, Integer> varTable;
     private static final String STATEMENT_TERMINATOR = ";";
@@ -42,9 +40,8 @@ public class Parser
             System.err.println("ScanErrorException: " + e.getMessage());
             System.exit(1); // Exit the program with a non-zero status
         }
-        this.lineNumber = token.getValue().getValue();
         this.lexeme = token.getKey();
-        this.lexemeType = token.getValue().getKey();
+        this.lexemeType = token.getValue();
     }
 
     /**
@@ -57,7 +54,7 @@ public class Parser
      */
     public int getLineNumber() 
     {
-        return lineNumber;
+        return scanner.getCurrentLine();
     }
 
     /**
@@ -67,27 +64,25 @@ public class Parser
      * Postcondition: The current lexeme is updated to the next token.
      *
      * @param expectedLexeme the lexeme expected to be consumed
-     * @throws IllegalArgumentException if the expected lexeme does not match the current lexeme
+     * @throws ParseErrorException if an error occurs while reading the next token
      */
-    private void eat(String expectedLexeme) throws IllegalArgumentException 
+    private void eat(String expectedLexeme) throws ParseErrorException 
     {
         if (!lexeme.equals(expectedLexeme)) 
         {
-            throw new IllegalArgumentException("Expected: " + expectedLexeme 
+            throw new ParseErrorException("Expected: " + expectedLexeme 
                     + ", found: " + lexeme);
         }
 
         try 
         {
             this.token = scanner.nextToken();
-            this.lineNumber = token.getValue().getValue();
             this.lexeme = token.getKey();
-            this.lexemeType = token.getValue().getKey();
+            this.lexemeType = token.getValue();
         } 
         catch (ScanErrorException e) 
         {
-            System.err.println("ScanErrorException: " + e.getMessage());
-            System.exit(1); // Exit the program with a non-zero status
+            throw new ParseErrorException("ScanErrorException: " + e.getMessage());
         }
     }
 
@@ -104,7 +99,7 @@ public class Parser
     {
         if (!lexeme.equals(expectedLexeme)) 
         {
-            throw new ParseErrorException("Unexpected token: " + lexeme + " at line " + lineNumber);
+            throw new ParseErrorException("Unexpected token: " + lexeme + " at line " + getLineNumber());
         }
     }
 
@@ -125,7 +120,7 @@ public class Parser
     {
         if (!condition.test(lexeme)) 
         {
-            throw new ParseErrorException("Unexpected token: " + lexeme + " at line " + lineNumber);
+            throw new ParseErrorException("Unexpected token: " + lexeme + " at line " + getLineNumber());
         }
     }
 
@@ -148,7 +143,7 @@ public class Parser
         } 
         catch (NumberFormatException e) 
         {
-            throw new ParseErrorException("Invalid number: " + lexeme + " at line " + lineNumber);
+            throw new ParseErrorException("Invalid number: " + lexeme + " at line " + getLineNumber());
         }
         eat(lexeme);
         return number;
@@ -183,7 +178,7 @@ public class Parser
         }
         else 
         {
-            throw new ParseErrorException("Unexpected token: " + lexeme + " at line " + lineNumber);
+            throw new ParseErrorException("Unexpected token: " + lexeme + " at line " + getLineNumber());
         }
     }
 
@@ -326,7 +321,7 @@ public class Parser
             else 
             {
                 throw new ParseErrorException("Undefined variable: " 
-                        + varName + " at line " + lineNumber);
+                        + varName + " at line " + getLineNumber());
             }
         }
         else if (lexemeType.equals(Scanner.NUMBER))
@@ -341,7 +336,7 @@ public class Parser
         }
         else
         {
-            throw new ParseErrorException("Unexpected token: " + lexeme + " at line " + lineNumber);
+            throw new ParseErrorException("Unexpected token: " + lexeme + " at line " + getLineNumber());
         }
     }
 

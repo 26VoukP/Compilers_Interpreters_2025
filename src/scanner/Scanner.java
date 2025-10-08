@@ -85,6 +85,17 @@ public class Scanner
     }
 
     /**
+     * Returns the current line number in the input stream.
+     * Precondition: None.
+     * Postcondition: Returns the current line number.
+     * @return the current line number
+     */
+    public int getCurrentLine() 
+    {
+        return currentLine;
+    }
+
+    /**
      * Reads the next character from the input stream into the currentChar variable.
      * Precondition: Input stream is open and readable.
      * Postcondition: currentChar is updated with the next character, or eof is set to true.
@@ -376,8 +387,7 @@ public class Scanner
      * @return the next token as a String
      * @throws ScanErrorException if an unexpected character is encountered
      */
-    public AbstractMap.SimpleEntry<String, AbstractMap.SimpleEntry<String, Integer>> 
-            nextToken() throws ScanErrorException 
+    public AbstractMap.SimpleEntry<String, String> nextToken() throws ScanErrorException 
     {
         // Skip whitespace
         while (!eof && isWhitespace(currentChar)) 
@@ -387,16 +397,14 @@ public class Scanner
 
         if (!hasNext()) 
         {
-            return new AbstractMap.SimpleEntry<>
-            (Scanner.EOF, new AbstractMap.SimpleEntry<>("special", currentLine));
+            return new AbstractMap.SimpleEntry<> (Scanner.EOF, Scanner.SPECIAL);
         }
 
         if (isSpecialChar(currentChar)) 
         {
             char c = currentChar;
             eat(currentChar);
-            return new AbstractMap.SimpleEntry<>
-            (String.valueOf(c), new AbstractMap.SimpleEntry<>("special", currentLine));
+            return new AbstractMap.SimpleEntry<> (String.valueOf(c), Scanner.SPECIAL);
         }
 
         if (isOperand(currentChar)) 
@@ -407,20 +415,17 @@ public class Scanner
                 removeInputStreamComment(scannedOperand);
                 return nextToken();
             }
-            return new AbstractMap.SimpleEntry<>
-            (scannedOperand, new AbstractMap.SimpleEntry<>(Scanner.OPERATOR, currentLine));
+            return new AbstractMap.SimpleEntry<> (scannedOperand, Scanner.OPERATOR);
         }
 
         if (isDigit(currentChar)) 
         {
-            return new AbstractMap.SimpleEntry<>
-            (scanNumber(), new AbstractMap.SimpleEntry<>(Scanner.NUMBER, currentLine));
+            return new AbstractMap.SimpleEntry<> (scanNumber(), Scanner.NUMBER);
         }
 
         if (isLetter(currentChar)) 
         {
-            return new AbstractMap.SimpleEntry<>
-            (scanIdentifier(), new AbstractMap.SimpleEntry<>(Scanner.IDENTIFIER, currentLine));
+            return new AbstractMap.SimpleEntry<> (scanIdentifier(), Scanner.IDENTIFIER);
         }
 
         throw new ScanErrorException(
