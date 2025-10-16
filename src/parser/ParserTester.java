@@ -1,5 +1,7 @@
 package parser;
 
+import ast.Block;
+import environment.Environment;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import scanner.Scanner;
@@ -34,15 +36,21 @@ public class ParserTester
             return; // Exit if the file is not found
         }
         
+        Environment env = new Environment();
         Parser parser = new Parser(scanner);
         try 
         {
-            parser.parseFile();
+            Block b = parser.parseFile();
+            b.exec(env);
         } 
         catch (ParseErrorException e) 
         {
-            System.err.println("Parse error at line " + parser.getLineNumber() + 
+            System.err.println("Parsing error at line " + parser.getLineNumber() + 
                     ": " + e.getMessage());
+        }
+        catch (RuntimeException e)
+        {
+            System.err.println("Runtime error: " + e.getMessage());
         }
     }
 }

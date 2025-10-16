@@ -1,4 +1,2 @@
-WRITELN(6 * 2 / 3);
-WRITELN(6 / 2 * 3);
-WRITELN(6 / (2 * 3)));
+FOR count := 1 TO 5 DO WRITELN(count);
 .

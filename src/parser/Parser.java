@@ -1,5 +1,6 @@
 package parser;
 
+import ast.*;
 import java.util.*;
 import scanner.ScanErrorException;
 import scanner.Scanner;
@@ -17,15 +18,25 @@ public class Parser
     private String lexemeType; // The type of the current lexeme
     private AbstractMap.SimpleEntry<String, String> token;
     private Scanner scanner; // The Scanner instance providing tokens
-    private Map<String, Integer> varTable;
     private static final String STATEMENT_TERMINATOR = ";";
+    public static final String OPENING_KEYWORD = "BEGIN";
+    public static final String CLOSING_KEYWORD = "END";
+    public static final String PRINT_KEYWORD = "WRITELN";
+    public static final String IF_KEYWORD = "IF";
+    public static final String THEN_KEYWORD = "THEN";
+    public static final String ELSE_KEYWORD = "ELSE";
+    public static final String WHILE_KEYWORD = "WHILE";
+    public static final String FOR_KEYWORD = "FOR";
+    public static final String TO_KEYWORD = "TO";
+    public static final String LOOP_OPENER = "DO";
+    public static final String ASSIGN = ":=";
+    public static final String OPEN_ARGS = "(";
+    public static final String CLOSE_ARGS = ")";
 
     /**
-     * Constructs a Parser with the given Scanner.
-     *
+     * Constructs a Parser
      * Precondition: The Scanner instance is not null.
-     * Postcondition: The Parser is initialized and ready to parse tokens.
-     *
+     * Postcondition: The Parser is initialized with the provided Scanner.
      * @param s the Scanner instance to use for tokenizing input
      */
     public Parser(Scanner s) 
@@ -125,32 +136,6 @@ public class Parser
     }
 
     /**
-     * Parses a number from the current lexeme.
-     *
-     * Precondition: The current lexeme is a valid number.
-     * Postcondition: The number is parsed and the lexeme is advanced.
-     *
-     * @return the parsed number
-     * @throws ParseErrorException if the current lexeme is not a valid number
-     */
-    private int parseNumber() throws ParseErrorException 
-    {
-        int number;
-
-        try 
-        {
-            number = Integer.parseInt(lexeme);
-        } 
-        catch (NumberFormatException e) 
-        {
-            throw new ParseErrorException("Invalid number: " + lexeme + " at line " + getLineNumber());
-        }
-        eat(lexeme);
-        return number;
-    }
-
-
-    /**
      * Parses a statement, which can be a program, print statement, or variable definition.
      * 
      * Precondition: The current lexeme is the start of a valid statement.
@@ -158,23 +143,35 @@ public class Parser
      *
      * @throws ParseErrorException if the syntax of the statement is invalid
      */
-    public void parseStatement() throws ParseErrorException 
+    public Statement parseStatement() throws ParseErrorException 
     {
-        if (lexeme.equals("BEGIN"))  
+        if (lexeme.equals(OPENING_KEYWORD)) 
         {
-            scanProgram();
+            return parseBlock();
+        } 
+        else if (lexeme.equals(PRINT_KEYWORD)) 
+        {
+            return parsePrintStatement();
         }
-        else if (lexeme.equals("WRITELN")) 
+        else if (lexeme.equals(IF_KEYWORD))
         {
-            scanPrintStatement();
+            return parseIfStatement();
+        }
+        else if (lexeme.equals(WHILE_KEYWORD))
+        {
+            return parseWhileStatement();
+        }
+        else if (lexeme.equals(FOR_KEYWORD))
+        {
+            return parseForStatement();
         }
         else if (lexemeType.equals(Scanner.IDENTIFIER))
         {
-            scanDefinition();
+            return parseDefinition();
         }
         else if (lexeme.equals(Scanner.EOF))
         {
-            // End of file reached, nothing to parse
+            throw new ParseErrorException("Unexpected end of file at line " + getLineNumber());
         }
         else 
         {
@@ -191,15 +188,17 @@ public class Parser
      *
      * @throws ParseErrorException if the syntax of the program is invalid
      */
-    private void scanProgram() throws ParseErrorException
+    private Block parseBlock() throws ParseErrorException
     {
-        eat("BEGIN");
-        while (!lexeme.equals("END"))
+        eat(OPENING_KEYWORD);
+        Block block = new Block();
+        while (!lexeme.equals(CLOSING_KEYWORD))
         {
-            parseStatement(); 
+            block.addStatement(parseStatement());
         }
-        eat("END");
+        eat(CLOSING_KEYWORD);
         eat(STATEMENT_TERMINATOR);
+        return block;
     }
 
     /**
@@ -211,13 +210,67 @@ public class Parser
      *
      * @throws ParseErrorException if the syntax of the print statement is invalid
      */
-    private void scanPrintStatement() throws ParseErrorException
+    private Writeln parsePrintStatement() throws ParseErrorException
     {
-        eat("WRITELN");
-        eat("(");
-        System.out.println(parseTerm());
-        eat(")");
+        eat(PRINT_KEYWORD);
+        eat(OPEN_ARGS);
+        Expression expr = parseTerm();
+        eat(CLOSE_ARGS);
         eat(STATEMENT_TERMINATOR);
+        return new Writeln(expr);
+    }
+
+    private If parseIfStatement() throws ParseErrorException
+    {
+        eat(IF_KEYWORD);
+        Condition i = parseCondition();
+        eat(THEN_KEYWORD);
+        Statement t = parseStatement();
+        if (!lexeme.equals(ELSE_KEYWORD))
+        {
+            return new If(i, t);
+        }
+        eat(ELSE_KEYWORD);
+        Statement e = parseStatement();
+        return new If(i, t, e);
+    }
+
+    private Condition parseCondition() throws ParseErrorException
+    {
+        List<String> validOperators = Arrays.asList("=", "<>", "<", ">", "<=", ">=");
+        Expression e1 = parseTerm();
+        if (!lexemeType.equals(Scanner.OPERATOR))
+        {
+            throw new ParseErrorException("'" +lexeme + "' is not an operator.");
+        }
+        else if (!validOperators.contains(lexeme))
+        {
+            throw new ParseErrorException("'" + lexeme + "' is not a valid boolean operator.");
+        }
+        String op = lexeme;
+        eat(lexeme);
+        Expression e2 = parseTerm();
+        return new Condition(e1, op, e2);
+    }
+
+    private While parseWhileStatement() throws ParseErrorException
+    {
+        eat(WHILE_KEYWORD);
+        Condition c = parseCondition();
+        eat(LOOP_OPENER);
+        Statement s = parseStatement();
+        return new While(c, s);
+    }
+
+    private For parseForStatement() throws ParseErrorException
+    {
+        eat(FOR_KEYWORD);
+        Assignment initialization = parseDefinition();
+        eat(TO_KEYWORD);
+        Expression maxVal = parseTerm();
+        eat(LOOP_OPENER);
+        Statement body = parseStatement();
+        return new For(initialization, maxVal, body);
     }
 
     /**
@@ -229,18 +282,22 @@ public class Parser
      *
      * @throws ParseErrorException if the syntax of the variable definition is invalid
      */
-    private void scanDefinition() throws ParseErrorException
+    private Assignment parseDefinition() throws ParseErrorException
     {
+        int originalLine = getLineNumber();
         String varName = lexeme;
         eat(lexeme);
-        eat(":=");
-        int value = parseTerm();
-        if (varTable == null) 
+        eat(ASSIGN);
+        Expression value = parseTerm();
+        if (lexeme.equals(STATEMENT_TERMINATOR))
         {
-            varTable = new HashMap<>();
+            eat(STATEMENT_TERMINATOR);
         }
-        varTable.put(varName, value);
-        eat(STATEMENT_TERMINATOR);
+        else if (getLineNumber() != originalLine)
+        {
+            throw new ParseErrorException("Missing semicolon after definition at line " + originalLine);
+        }
+        return new Assignment(new Variable(varName), value);
     }
 
     /**
@@ -253,32 +310,37 @@ public class Parser
      * @return the parsed term
      * @throws ParseErrorException if the syntax of the term is invalid
      */
-    public int parseTerm() throws ParseErrorException
+    public Expression parseTerm() throws ParseErrorException
     {
-        int result = parseFactor();
-        while (true) 
+        Expression result = parseFactor();
+        String op;
+        while (true)
         {
-            switch (lexeme) 
+            switch (lexeme)
             {
                 case "*" -> 
                 {
+                    op = lexeme;
                     eat(lexeme);
-                    result *= parseFactor();
+                    result = new BinOp(result, op, parseFactor());
                 }
                 case "/" -> 
                 {
+                    op = lexeme;
                     eat(lexeme);
-                    result /= parseFactor();
+                    result = new BinOp(result, op, parseFactor());
                 }
                 case "+" -> 
                 {
+                    op = lexeme;
                     eat(lexeme);
-                    result += parseTerm();
+                    result = new BinOp(result, op, parseTerm());
                 }
                 case "-" -> 
                 {
+                    op = lexeme;
                     eat(lexeme);
-                    result -= parseTerm();
+                    result = new BinOp(result, op, parseTerm());
                 }
                 default -> 
                 {
@@ -287,7 +349,6 @@ public class Parser
             }
         }
     }
-
 
     /**
      * Parses a factor, which can be a number, an identifier, or a parenthesized expression.
@@ -298,15 +359,15 @@ public class Parser
      * @return the parsed factor
      * @throws ParseErrorException if the syntax of the factor is invalid
      */
-    public int parseFactor() throws ParseErrorException
+    public Expression parseFactor() throws ParseErrorException
     {
-        if (lexeme.equals("("))
+        if (lexeme.equals(OPEN_ARGS))
         {
             // It's a valid opening parenthesis
             eat(lexeme);
             // Parse the expression inside the parentheses
-            int parsedTerm = parseTerm();
-            eat(")");
+            Expression parsedTerm = parseTerm();
+            eat(CLOSE_ARGS);
             return parsedTerm;
         }
 
@@ -314,25 +375,26 @@ public class Parser
         {
             String varName = lexeme;
             eat(lexeme);
-            if (varTable != null && varTable.containsKey(varName)) 
-            {
-                return varTable.get(varName);
-            } 
-            else 
-            {
-                throw new ParseErrorException("Undefined variable: " 
-                        + varName + " at line " + getLineNumber());
-            }
+            return new Variable(varName);
         }
         else if (lexemeType.equals(Scanner.NUMBER))
         {
-            return parseNumber();
+            int num;
+            try 
+            {
+                num = Integer.parseInt(lexeme);
+            } 
+            catch (NumberFormatException e) 
+            {
+                throw new ParseErrorException("Invalid number '" + lexeme + "'");
+            }
+            eat(lexeme);
+            return new ast.Number(num);
         }
         else if (lexeme.equals("-"))
         {
-            // It's a unary minus
-            eat("-");
-            return -parseFactor();
+            eat("-"); // unary minus
+            return new BinOp(new ast.Number(-1), "*", parseFactor());
         }
         else
         {
@@ -361,12 +423,14 @@ public class Parser
      *
      * @throws ParseErrorException if the syntax of any statement is invalid
      */
-    public void parseFile() throws ParseErrorException
+    public Block parseFile() throws ParseErrorException
     {
+        Block block = new Block();
         while (hasMoreTokens())
         {
-            parseStatement();
+            block.addStatement(parseStatement());
         }
+        return block;
     }
 }
 
