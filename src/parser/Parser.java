@@ -29,6 +29,7 @@ public class Parser
     public static final String FOR_KEYWORD = "FOR";
     public static final String TO_KEYWORD = "TO";
     public static final String LOOP_OPENER = "DO";
+    public static final String READLN_KEYWORD = "READLN";
     public static final String ASSIGN = ":=";
     public static final String OPEN_ARGS = "(";
     public static final String CLOSE_ARGS = ")";
@@ -165,6 +166,10 @@ public class Parser
         {
             return parseForStatement();
         }
+        else if (lexeme.equals(READLN_KEYWORD))
+        {
+            return parseReadlnStatement();
+        }
         else if (lexemeType.equals(Scanner.IDENTIFIER))
         {
             return parseDefinition();
@@ -220,6 +225,15 @@ public class Parser
         return new Writeln(expr);
     }
 
+    /**
+     * Parses an if statement of the form IF condition THEN statement [ELSE statement].
+     *
+     * Precondition: The current lexeme is "IF".
+     * Postcondition: The if statement is parsed, and the lexeme is advanced 
+     * past the statement terminator.
+     *
+     * @throws ParseErrorException if the syntax of the if statement is invalid
+     */
     private If parseIfStatement() throws ParseErrorException
     {
         eat(IF_KEYWORD);
@@ -235,6 +249,15 @@ public class Parser
         return new If(i, t, e);
     }
 
+    /**
+     * Parses a condition of the form expression operator expression.
+     *
+     * Precondition: The current lexeme is the start of a valid condition.
+     * Postcondition: The condition is parsed, and the lexeme is advanced 
+     * past the condition.
+     *
+     * @throws ParseErrorException if the syntax of the condition is invalid
+     */
     private Condition parseCondition() throws ParseErrorException
     {
         List<String> validOperators = Arrays.asList("=", "<>", "<", ">", "<=", ">=");
@@ -253,6 +276,15 @@ public class Parser
         return new Condition(e1, op, e2);
     }
 
+    /**
+     * Parses a while statement of the form WHILE condition DO statement.
+     *
+     * Precondition: The current lexeme is "WHILE".
+     * Postcondition: The while statement is parsed, and the lexeme is advanced 
+     * past the statement terminator.
+     *
+     * @throws ParseErrorException if the syntax of the while statement is invalid
+     */
     private While parseWhileStatement() throws ParseErrorException
     {
         eat(WHILE_KEYWORD);
@@ -262,6 +294,15 @@ public class Parser
         return new While(c, s);
     }
 
+    /**
+     * Parses a for statement of the form FOR variable := expression TO expression DO statement.
+     *
+     * Precondition: The current lexeme is "FOR".
+     * Postcondition: The for statement is parsed, and the lexeme is advanced 
+     * past the statement terminator.
+     *
+     * @throws ParseErrorException if the syntax of the for statement is invalid
+     */
     private For parseForStatement() throws ParseErrorException
     {
         eat(FOR_KEYWORD);
@@ -271,6 +312,30 @@ public class Parser
         eat(LOOP_OPENER);
         Statement body = parseStatement();
         return new For(initialization, maxVal, body);
+    }
+
+    /**
+     * Parses a readln statement of the form READLN(variable).
+     *
+     * Precondition: The current lexeme is "READLN".
+     * Postcondition: The readln statement is parsed, and the lexeme is advanced 
+     * past the statement terminator.
+     *
+     * @throws ParseErrorException if the syntax of the readln statement is invalid
+     */
+    private Readln parseReadlnStatement() throws ParseErrorException
+    {
+        eat(READLN_KEYWORD);
+        eat(OPEN_ARGS);
+        if (!lexemeType.equals(Scanner.IDENTIFIER))
+        {
+            throw new ParseErrorException("Expected an identifier, found: " + lexeme);
+        }
+        Variable var = new Variable(lexeme);
+        eat(lexeme);
+        eat(CLOSE_ARGS);
+        eat(STATEMENT_TERMINATOR);
+        return new Readln(var);
     }
 
     /**
@@ -380,11 +445,11 @@ public class Parser
         else if (lexemeType.equals(Scanner.NUMBER))
         {
             int num;
-            try 
+            try
             {
                 num = Integer.parseInt(lexeme);
-            } 
-            catch (NumberFormatException e) 
+            }
+            catch (NumberFormatException e)
             {
                 throw new ParseErrorException("Invalid number '" + lexeme + "'");
             }

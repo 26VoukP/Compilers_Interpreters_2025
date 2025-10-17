@@ -6,7 +6,7 @@ import environment.Environment;
  * Represents an assignment statement in the AST, consisting of a variable and an expression.\
  * 
  * @author Vouk
- * @version Octoboer 10, 2025
+ * @version October 10, 2025
  */
 public class Assignment extends Statement 
 {
