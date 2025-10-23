@@ -33,6 +33,8 @@ public class Parser
     public static final String ASSIGN = ":=";
     public static final String OPEN_ARGS = "(";
     public static final String CLOSE_ARGS = ")";
+    public static final String METHOD_DEC = "PROCEDURE";
+    public static final String SEPARATOR = ",";
 
     /**
      * Constructs a Parser
@@ -111,7 +113,7 @@ public class Parser
     {
         if (!lexeme.equals(expectedLexeme)) 
         {
-            throw new ParseErrorException("Unexpected token: " + lexeme + " at line " + getLineNumber());
+            throw new ParseErrorException("Unexpected token: " + lexeme);
         }
     }
 
@@ -435,12 +437,26 @@ public class Parser
             eat(CLOSE_ARGS);
             return parsedTerm;
         }
-
         if (lexemeType.equals(Scanner.IDENTIFIER))
         {
-            String varName = lexeme;
+            String id = lexeme;
             eat(lexeme);
-            return new Variable(varName);
+            if (lexeme.equals(OPEN_ARGS))
+            {
+                eat(OPEN_ARGS);
+                if (lexeme.equals(CLOSE_ARGS))
+                {
+                    eat(CLOSE_ARGS);
+                    return new ProcedureCall(id, new Expression[0]);
+                }
+                else
+                {
+                    Expression[] argVals = parseProcedureArguments();
+                    eat(CLOSE_ARGS);
+                    return new ProcedureCall(id, argVals);
+                }
+            }
+            return new Variable(id);
         }
         else if (lexemeType.equals(Scanner.NUMBER))
         {
@@ -468,6 +484,67 @@ public class Parser
     }
 
     /**
+     * Parses the arguments for a procedure call.
+     *
+     * Precondition: The current lexeme is the start of a valid procedure call.
+     * Postcondition: The arguments are parsed, and the lexeme is advanced past the arguments.
+     *
+     * @return the parsed arguments
+     * @throws ParseErrorException if the syntax of the procedure arguments is invalid
+     */
+    private Expression[] parseProcedureArguments() throws ParseErrorException
+    {
+        List<Expression> args = new ArrayList<>();
+        while (!lexeme.equals(CLOSE_ARGS))
+        {
+            if (lexeme.equals(SEPARATOR))
+            {
+                eat(lexeme);
+                if (lexeme.equals(CLOSE_ARGS))
+                {
+                    throw new ParseErrorException("Unnecessary ',' in arguments for procedure call.");
+                }
+                continue;
+            }
+            args.add(parseTerm());
+        }
+        return args.toArray(Expression[]::new);
+    }
+
+    /**
+     * Parses the parameters for a procedure declaration.
+     *
+     * Precondition: The current lexeme is the start of a valid procedure declaration.
+     * Postcondition: The parameters are parsed, and the lexeme is advanced past the parameters.
+     *
+     * @return the parsed parameters
+     * @throws ParseErrorException if the syntax of the procedure parameters is invalid
+     */
+    private String[] parseProcedureParams() throws ParseErrorException
+    {
+        List<String> params = new ArrayList<>();
+        while (!lexeme.equals(CLOSE_ARGS))
+        {
+            if (lexeme.equals(SEPARATOR))
+            {
+                eat(lexeme);
+                if (lexeme.equals(CLOSE_ARGS))
+                {
+                    throw new ParseErrorException("Unnecessary ',' in parameters for procedure.");
+                }
+                continue;
+            }
+            if (!lexemeType.equals(Scanner.IDENTIFIER))
+            {
+                throw new ParseErrorException("Invalid parameter name for procedure: " + lexeme);
+            }
+            params.add(lexeme);
+            eat(lexeme);
+        }
+        return params.toArray(String[]::new);
+    }
+
+    /**
      * Checks if there are more tokens to parse.
      *
      * Precondition: None.
@@ -488,14 +565,31 @@ public class Parser
      *
      * @throws ParseErrorException if the syntax of any statement is invalid
      */
-    public Block parseFile() throws ParseErrorException
+    public Program parseProgram() throws ParseErrorException
     {
-        Block block = new Block();
-        while (hasMoreTokens())
+        if (lexeme.equals(METHOD_DEC))
         {
-            block.addStatement(parseStatement());
+            eat(METHOD_DEC);
+            String n = lexeme;
+            eat(n);
+            eat(OPEN_ARGS);
+            String[] params;
+            if (lexeme.equals(OPEN_ARGS))
+            {
+                params = new String[0];
+                eat(CLOSE_ARGS);
+            }
+            else
+            {
+                params = parseProcedureParams();
+                eat(CLOSE_ARGS);
+            }
+            eat(STATEMENT_TERMINATOR);
+            return new Program(new ProcedureDeclaration(n, params, parseStatement()), parseProgram());
         }
-        return block;
+        else
+        {
+            return new Program(parseStatement());
+        }
     }
 }
-

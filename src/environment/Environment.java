@@ -1,5 +1,6 @@
 package environment;
 
+import ast.ProcedureDeclaration;
 import java.util.*;
 
 /**
@@ -10,22 +11,54 @@ import java.util.*;
  */
 public class Environment 
 {
+    private final Environment parent;
     private final Map<String, Integer> variables;
+    private final Map<String, ProcedureDeclaration> procedures;
 
     /** 
      * Constructs a new Environment. 
      */
     public Environment()
     {
+        parent = null;
         variables = new HashMap<>();
+        procedures = new HashMap<>();
     }
 
-    /** Sets the value of a variable in the environment.
+    /**
+     * Constructs an environemnt with the specified parent.
+     * 
+     * @param p the parent of the current environment.
+     */
+    public Environment(Environment p)
+    {
+        parent = p;
+        variables = new HashMap<>();
+        procedures = null;
+    }
+
+    /**
+     * Goes up the tree of environments to get a reference to the root environment
+     * 
+     * @return the root environment
+     */
+    public Environment getRoot()
+    {
+        if (parent == null)
+        {
+            return this;
+        }
+        return parent.getRoot();
+    }
+
+    /** 
+     * Declares a variable in the environment.
+     * If it is already declared, it will be replaced.
      * 
      * @param n the name of the variable
      * @param v the value to set the variable to
      */
-    public void setVariable(String n, int v)
+    public void declareVariable(String n, int v)
     {
         if (variables.containsKey(n))
         {
@@ -35,7 +68,25 @@ public class Environment
         variables.put(n, v);
     }
 
-    /** Gets the value of a variable in the environment.
+    /** 
+     * Sets the value of a variable in the environment if it is already declared. 
+     * If it is not, it will be declared in the root environment.
+     * 
+     * @param n the name of the variable
+     * @param v the value to set the variable to
+     */
+    public void setVariable(String n, int v)
+    {
+        if (variables.containsKey(n))
+        {
+            declareVariable(n, v);
+            return;
+        }
+        getRoot().declareVariable(n, v);
+    }
+
+    /** 
+     * Gets the value of a variable in the environment.
      * 
      * @param n the name of the variable
      * @return the value of the variable
@@ -43,7 +94,46 @@ public class Environment
     public int getVariable(String n)
     {
         if (!variables.containsKey(n))
-            throw new NoSuchElementException("Variable " + n + " not found.");
+        {
+            Map<String, Integer> v2 = getRoot().variables;
+            if (!v2.containsKey(n))
+            {
+                throw new NoSuchElementException("Variable " + n + " not found.");
+            }
+            return v2.get(n);
+        }
         return variables.get(n);
+    }
+
+    /** 
+     * Sets the procedure in the environment.
+     * If it is already declared, it will be replaced.
+     * 
+     * @param n the name of the procedure
+     * @param p the procedure to set
+     */
+    public void setProcedure(String n, ProcedureDeclaration p)
+    {
+        Map<String, ProcedureDeclaration> rootProcedures = getRoot().procedures;
+        if (rootProcedures.containsKey(n))
+        {
+            rootProcedures.replace(n, p);
+            return;
+        }
+        rootProcedures.put(n, p);
+    }
+
+    /** 
+     * Gets the procedure in the environment.
+     * 
+     * @param n the name of the procedure
+     * @return the procedure
+     */
+    public ProcedureDeclaration getProcedure(String n)
+    {
+        Map<String, ProcedureDeclaration> rootProcedures = getRoot().procedures;
+        if (!rootProcedures.containsKey(n))
+            throw new NoSuchElementException("Procedure " + n + " not found.");
+        return rootProcedures.get(n);
     }
 }

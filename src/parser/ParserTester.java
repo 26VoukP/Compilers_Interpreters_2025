@@ -1,6 +1,6 @@
 package parser;
 
-import ast.Block;
+import ast.*;
 import environment.Environment;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -14,6 +14,7 @@ import scanner.Scanner;
  */
 public class ParserTester 
 {
+
     /**
      * Main method to test the Parser with a sample input file.
      * 
@@ -24,11 +25,12 @@ public class ParserTester
      */
     public static void main(String[] args) 
     {
+        String testFile = "src/parser/parserTest5.txt";
         Scanner scanner;
         try 
         {
             // Create a Scanner to scan the ParseTester.txt file
-            scanner = new Scanner(new FileInputStream("src/parser/ParseTester.txt"));
+            scanner = new Scanner(new FileInputStream(testFile));
         }
         catch (FileNotFoundException e) 
         {
@@ -40,8 +42,8 @@ public class ParserTester
         Parser parser = new Parser(scanner);
         try 
         {
-            Block b = parser.parseFile();
-            b.exec(env);
+            Program p = parser.parseProgram();
+            p.exec(env);
         } 
         catch (ParseErrorException e) 
         {

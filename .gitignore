@@ -18,6 +18,7 @@ target/
 .idea/
 *.iml
 *.vscode/
+*.cursor/
 
 # Ignore logs
 *.log
