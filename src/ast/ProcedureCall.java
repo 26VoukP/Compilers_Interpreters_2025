@@ -3,7 +3,7 @@ package ast;
 import environment.Environment;
 
 /**
- * Represents a procedure call statement in the AST.
+ * Represents a procedure call expression in the AST.
  * 
  * @author Vouk
  * @version October 15, 2025
@@ -16,7 +16,8 @@ public class ProcedureCall extends Expression
     /**
      * Constructs a ProcedureCall with the given environment and body.
      * 
-     * @param name the name of the procedure being called.
+     * @param n the name of the procedure being called.
+     * @param aV the values of the arguments passed to this ProcedureCall
      */
     public ProcedureCall(String n, Expression[] aV)
     {

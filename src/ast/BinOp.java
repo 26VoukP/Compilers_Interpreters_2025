@@ -62,19 +62,14 @@ public class BinOp extends Expression
     {
         int l = exp1.eval(env);
         int r = exp2.eval(env);
-        switch (op)
+        return switch (op)
         {
-            case "+":
-                return l + r;
-            case "-":
-                return l - r;
-            case "*":
-                return l * r;
-            case "/":
-                return l / r;
-            default:
-                throw new RuntimeException("Unknown operator '" + op + "'");
-        }
+            case "+" -> l + r;
+            case "-" -> l - r;
+            case "*" -> l * r;
+            case "/" -> l / r;
+            default -> throw new RuntimeException("Unknown operator '" + op + "'");
+        };
     }
     
 }

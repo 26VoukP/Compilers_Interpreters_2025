@@ -25,7 +25,7 @@ public class ParserTester
      */
     public static void main(String[] args) 
     {
-        String testFile = "src/parser/parserTest5.txt";
+        String testFile = "src/parser/parserTest7.txt";
         Scanner scanner;
         try 
         {

@@ -22,5 +22,5 @@ BEGIN
     WRITELN(y);
 END;
 
-//should output 9 then 3 then 9
+//should output 9 then 3 then 0
 

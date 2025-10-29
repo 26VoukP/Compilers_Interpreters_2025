@@ -80,9 +80,15 @@ public class Environment
         if (variables.containsKey(n))
         {
             declareVariable(n, v);
-            return;
         }
-        getRoot().declareVariable(n, v);
+        else if (getRoot().variables.containsKey(n))
+        {
+            getRoot().declareVariable(n, v);
+        }
+        else
+        {
+            declareVariable(n, v);
+        }
     }
 
     /** 
@@ -95,12 +101,13 @@ public class Environment
     {
         if (!variables.containsKey(n))
         {
-            Map<String, Integer> v2 = getRoot().variables;
-            if (!v2.containsKey(n))
+            Environment root = getRoot();
+            if (!root.variables.containsKey(n))
             {
-                throw new NoSuchElementException("Variable " + n + " not found.");
+                this.setVariable(n, 0); // sets undefined variable to 0 automatically
+                return 0;
             }
-            return v2.get(n);
+            return root.getVariable(n);
         }
         return variables.get(n);
     }
