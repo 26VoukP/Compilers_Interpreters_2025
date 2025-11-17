@@ -83,24 +83,23 @@ public class If extends Statement
             String elseLabel = "else" + labelID;
             e.emit("j " + elseLabel);
             // Emit iftrue label and compile if body
-            e.emit(iftrueLabel + ":");
+            e.emit(iftrueLabel + ": # if true body");
             statement.compile(e);
             // Jump past else to endif
             e.emit("j " + endifLabel);
             // Emit else label and compile else body
-            e.emit(elseLabel + ":");
+            e.emit(elseLabel + ": # else body");
             elseS.compile(e);
         }
         else
         {
-            // No else clause - jump to endif if condition is false
             e.emit("j " + endifLabel);
-            // Emit iftrue label and compile if body
-            e.emit(iftrueLabel + ":");
+        
+            e.emit(iftrueLabel + ": # if true body");
             statement.compile(e);
         }
         
-        // Emit endif label - code continues here
-        e.emit(endifLabel + ":");
+        e.emit("");
+        e.emit(endifLabel + ": # endif body");
     }
 }

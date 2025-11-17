@@ -48,7 +48,6 @@ public class Writeln extends Statement
      * Compiles the writeln statement into assembly code.
      * @param e the emitter to use to compile the writeln statement
      */
-    @Override
     public void compile(Emitter e)
     {
         expr.compile(e);

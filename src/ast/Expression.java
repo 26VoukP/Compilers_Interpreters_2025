@@ -6,7 +6,7 @@ import environment.Environment;
 /**
  * Abstract base class for all expression nodes in the AST.
  * 
- * @author Vouki
+ * @author Vouk Praun-Petrovic
  * @version October 15, 2025
  */
 public abstract class Expression 

@@ -63,13 +63,14 @@ public class For extends Statement
         String loopEndLabel = "loopEnd" + labelID;
         String bodyLabel = "loopBody" + labelID;
         initialization.compile(e);
-        e.emit(loopStartLabel + ":");
+        e.emit(loopStartLabel + ": # start of for loop");
         condition.compile(e, bodyLabel);
         e.emit("j " + loopEndLabel);
-        e.emit(bodyLabel + ":");
+        e.emit(bodyLabel + ": # body of for loop");
         body.compile(e);
         varUpdate.compile(e);
         e.emit("j " + loopStartLabel);
-        e.emit(loopEndLabel + ":");
+        e.emit("");
+        e.emit(loopEndLabel + ": # end of for loop");
     }
 }

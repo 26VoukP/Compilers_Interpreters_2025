@@ -97,23 +97,23 @@ public class BinOp extends Expression
         {
             case "+" -> 
             {
-                e.emit("addu $v0, $v0, $t0");
+                e.emit("addu $v0, $v0, $t0  # add the two values into $v0");
                 e.emit(""); // adds a new line
             }
             case "-" -> 
             {
-                e.emit("subu $v0, $v0, $t0");
+                e.emit("subu $v0, $v0, $t0  # subtract the two values into $v0");
                 e.emit(""); // adds a new line
             }
             case "*" -> 
             {
-                e.emit("mult $v0, $t0");
+                e.emit("mult $v0, $t0  # multiply the two values into $v0");
                 e.emit("mflo $v0");
                 e.emit(""); // adds a new line
             }
             case "/" -> 
             {
-                e.emit("div $v0, $t0");
+                e.emit("div $v0, $t0  # divide the two values into $v0");
                 e.emit("mflo $v0");
                 e.emit(""); // adds a new line
             }
