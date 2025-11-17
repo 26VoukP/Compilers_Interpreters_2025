@@ -1,5 +1,6 @@
 package ast;
 
+import emitter.Emitter;
 import environment.Environment;
 
 /**
@@ -57,5 +58,49 @@ public class If extends Statement
         {
             elseS.exec(env);
         }
+    }
+
+    /**
+     * Compiles the if statement into assembly code.
+     * Generates code that evaluates the condition, branches to the if body if true,
+     * and optionally handles an else clause.
+     * 
+     * @param e the emitter to use to compile the if statement
+     */
+    @Override
+    public void compile(Emitter e)
+    {
+        int labelID = e.nextLabelID();
+        String iftrueLabel = "iftrue" + labelID;
+        String endifLabel = "endif" + labelID;
+        
+        // Compile condition - branch to iftrue if condition is true
+        condition.compile(e, iftrueLabel);
+        
+        // If condition is false, jump to else or endif
+        if (elseS != null)
+        {
+            String elseLabel = "else" + labelID;
+            e.emit("j " + elseLabel);
+            // Emit iftrue label and compile if body
+            e.emit(iftrueLabel + ":");
+            statement.compile(e);
+            // Jump past else to endif
+            e.emit("j " + endifLabel);
+            // Emit else label and compile else body
+            e.emit(elseLabel + ":");
+            elseS.compile(e);
+        }
+        else
+        {
+            // No else clause - jump to endif if condition is false
+            e.emit("j " + endifLabel);
+            // Emit iftrue label and compile if body
+            e.emit(iftrueLabel + ":");
+            statement.compile(e);
+        }
+        
+        // Emit endif label - code continues here
+        e.emit(endifLabel + ":");
     }
 }

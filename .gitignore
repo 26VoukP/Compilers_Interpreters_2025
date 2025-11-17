@@ -27,3 +27,4 @@ target/
 src/jflex/
 
 postapcs.xml
+*.asm

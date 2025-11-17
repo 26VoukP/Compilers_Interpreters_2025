@@ -1,5 +1,6 @@
 package ast;
 
+import emitter.Emitter;
 import environment.Environment;
 
 /**
@@ -47,4 +48,28 @@ public class For extends Statement
         }
     }
     
+    /**
+     * Compiles the for loop into assembly code.
+     * Generates a loop that initializes the loop variable, checks the condition,
+     * executes the body, updates the loop variable, and repeats.
+     * 
+     * @param e the emitter to use to compile the for loop
+     */
+    @Override
+    public void compile(Emitter e)
+    {
+        int labelID = e.nextLabelID();
+        String loopStartLabel = "loopStart" + labelID;
+        String loopEndLabel = "loopEnd" + labelID;
+        String bodyLabel = "loopBody" + labelID;
+        initialization.compile(e);
+        e.emit(loopStartLabel + ":");
+        condition.compile(e, bodyLabel);
+        e.emit("j " + loopEndLabel);
+        e.emit(bodyLabel + ":");
+        body.compile(e);
+        varUpdate.compile(e);
+        e.emit("j " + loopStartLabel);
+        e.emit(loopEndLabel + ":");
+    }
 }

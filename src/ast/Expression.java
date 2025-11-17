@@ -1,5 +1,6 @@
 package ast;
 
+import emitter.Emitter;
 import environment.Environment;
 
 /**
@@ -17,4 +18,14 @@ public abstract class Expression
      * @return the integer of the expression
      */
     public abstract int eval(Environment env);
+
+    /**
+     * Compiles the expression into assembly code.
+     * 
+     * @param e the emitter to use to compile the expression
+     */
+    public void compile(Emitter e)
+    {
+        throw new RuntimeException("Expression compile method not implemented.");
+    }
 }

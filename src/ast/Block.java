@@ -1,5 +1,6 @@
 package ast;
 
+import emitter.Emitter;
 import environment.Environment;
 import java.util.*;
 
@@ -55,6 +56,20 @@ public class Block extends Statement
         for (Statement stmt : statements)
         {
             stmt.exec(env);
+        }
+    }
+
+    /**
+     * Compiles the block into assembly code.
+     * 
+     * @param e the emitter to use to compile the block
+     */
+    @Override
+    public void compile(Emitter e)
+    {
+        for (Statement stmt : statements)
+        {
+            stmt.compile(e);
         }
     }
 }

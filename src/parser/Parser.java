@@ -34,6 +34,7 @@ public class Parser
     public static final String OPEN_ARGS = "(";
     public static final String CLOSE_ARGS = ")";
     public static final String METHOD_DEC = "PROCEDURE";
+    public static final String GLOBAL_DEC = "VAR";
     public static final String SEPARATOR = ",";
 
     /**
@@ -354,6 +355,10 @@ public class Parser
         int originalLine = getLineNumber();
         String varName = lexeme;
         eat(lexeme);
+        if (!lexeme.equals(ASSIGN))
+        {
+            return new Assignment(new Variable(varName), new ast.Number(0));
+        }
         eat(ASSIGN);
         Expression value = parseTerm();
         if (lexeme.equals(STATEMENT_TERMINATOR))
@@ -557,17 +562,10 @@ public class Parser
         return !lexeme.equals(Scanner.EOF);
     }
 
-    /**
-     * Parses the entire file by repeatedly parsing statements until EOF is reached.
-     *
-     * Precondition: The file contains valid syntax.
-     * Postcondition: All statements in the file are parsed.
-     *
-     * @throws ParseErrorException if the syntax of any statement is invalid
-     */
-    public Program parseProgram() throws ParseErrorException
+    private ProcedureDeclaration[] parseProcedureDeclarations() throws ParseErrorException
     {
-        if (lexeme.equals(METHOD_DEC))
+        List<ProcedureDeclaration> decs = new ArrayList<>();
+        while (lexeme.equals(METHOD_DEC))
         {
             eat(METHOD_DEC);
             String n = lexeme;
@@ -585,11 +583,61 @@ public class Parser
                 eat(CLOSE_ARGS);
             }
             eat(STATEMENT_TERMINATOR);
-            return new Program(new ProcedureDeclaration(n, params, parseStatement()), parseProgram());
+            decs.add(new ProcedureDeclaration(n, params, parseStatement()));
         }
-        else
+        return decs.toArray(ProcedureDeclaration[]::new);
+    }
+
+    /**
+     * Parses all the global declarations in the program.
+     *
+     * Precondition: The current lexeme is the start of a valid global declaration.
+     * Postcondition: The global declarations are parsed, and the lexeme is advanced past the global declarations.
+     *
+     * @return the parsed global declarations
+     * @throws ParseErrorException if the syntax of the global declarations is invalid
+     */
+    private Variable[] parseGlobalVariables() throws ParseErrorException
+    {
+        List<Variable> decs = new ArrayList<>();
+        while (lexeme.equals(GLOBAL_DEC))
         {
-            return new Program(parseStatement());
+            eat(GLOBAL_DEC);
+
+            decs.add(new Variable(lexeme));
+            eat(lexeme);
+            while (lexeme.equals(SEPARATOR))
+            {
+                eat(SEPARATOR);
+                decs.add(new Variable(lexeme));
+                eat(lexeme);
+            }
+            eat(STATEMENT_TERMINATOR);
         }
+        return decs.toArray(Variable[]::new);
+        
+    }
+
+    /**
+     * Parses the entire file by repeatedly parsing statements until EOF is reached.
+     *
+     * Precondition: The file contains valid syntax.
+     * Postcondition: All statements in the file are parsed.
+     *
+     * @throws ParseErrorException if the syntax of any statement is invalid
+     */
+    public Program parseProgram() throws ParseErrorException
+    {
+        Variable[] vars = null;
+        if (lexeme.equals(GLOBAL_DEC))
+        {
+            vars = parseGlobalVariables();
+        }
+        ProcedureDeclaration[] procs = null;
+        if (lexeme.equals(METHOD_DEC))
+        {
+            procs = parseProcedureDeclarations();
+        }
+        return new Program(vars, procs, parseStatement());
     }
 }

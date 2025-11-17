@@ -12,7 +12,7 @@ import scanner.Scanner;
  * @author Vouk Praun-Petrovic
  * @version October 2, 2025
  */
-public class ParserTester 
+public class InterpreterTester 
 {
 
     /**

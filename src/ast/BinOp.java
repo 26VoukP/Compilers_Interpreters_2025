@@ -1,5 +1,6 @@
 package ast;
 
+import emitter.Emitter;
 import environment.Environment;
 
 /**
@@ -57,6 +58,13 @@ public class BinOp extends Expression
         return op;
     }
 
+    /**
+     * Evaluates the binary operation in the given environment and returns its result.
+     * 
+     * @param env the environment in which to evaluate the expression
+     * @return the integer result of the binary operation
+     * @throws RuntimeException if the operator is unknown
+     */
     @Override
     public int eval(Environment env)
     {
@@ -70,6 +78,47 @@ public class BinOp extends Expression
             case "/" -> l / r;
             default -> throw new RuntimeException("Unknown operator '" + op + "'");
         };
+    }
+
+    /**
+     * Compiles the binary operation into assembly code.
+     * 
+     * @param e the emitter to use to compile the binary operation
+     * @throws RuntimeException if the operator is unknown
+     */
+    @Override
+    public void compile(Emitter e)
+    {
+        exp1.compile(e);
+        e.emitPush("$v0");
+        exp2.compile(e);
+        e.emitPop("$t0");
+        switch (op)
+        {
+            case "+" -> 
+            {
+                e.emit("addu $v0, $v0, $t0");
+                e.emit(""); // adds a new line
+            }
+            case "-" -> 
+            {
+                e.emit("subu $v0, $v0, $t0");
+                e.emit(""); // adds a new line
+            }
+            case "*" -> 
+            {
+                e.emit("mult $v0, $t0");
+                e.emit("mflo $v0");
+                e.emit(""); // adds a new line
+            }
+            case "/" -> 
+            {
+                e.emit("div $v0, $t0");
+                e.emit("mflo $v0");
+                e.emit(""); // adds a new line
+            }
+            default -> throw new RuntimeException("Unknown operator '" + op + "'");
+        }
     }
     
 }

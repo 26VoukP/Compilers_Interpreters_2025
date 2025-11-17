@@ -1,5 +1,6 @@
 package ast;
 
+import emitter.Emitter;
 import environment.Environment;
 import java.util.AbstractMap;
 import scanner.*;
@@ -47,5 +48,20 @@ public class Readln extends Statement
         {
             throw new RuntimeException("Error reading input: " + e.getMessage());
         }
+    }
+
+    /**
+     * Compiles the readln statement into assembly code.
+     * Generates code that reads an integer from standard input and stores it
+     * in the specified variable.
+     * 
+     * @param e the emitter to use to compile the readln statement
+     */
+    @Override
+    public void compile(Emitter e)
+    {
+        e.emit("li $v0, 5");
+        e.emit("syscall");
+        e.emit("sw $v0, var" + var.getName());
     }
 }

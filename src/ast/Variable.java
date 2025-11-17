@@ -1,5 +1,6 @@
 package ast;
 
+import emitter.Emitter;
 import environment.Environment;
 
 /**
@@ -42,5 +43,18 @@ public class Variable extends Expression
     public int eval(Environment env) 
     {
         return env.getVariable(name);
+    }
+
+    /**
+     * Compiles the variable reference into assembly code.
+     * Generates code that loads the variable's value from memory into register $v0.
+     * 
+     * @param e the emitter to use to compile the variable reference
+     */
+    @Override
+    public void compile(Emitter e)
+    {
+        e.emit("la $t0, var" + name);
+        e.emit("lw $v0, ($t0)");
     }
 }

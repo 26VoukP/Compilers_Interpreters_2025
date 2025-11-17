@@ -1,5 +1,6 @@
 package ast;
 
+import emitter.Emitter;
 import environment.Environment;
 
 /**
@@ -10,62 +11,71 @@ import environment.Environment;
  * @author Vouk Praun-Petrovic
  * @version October 2, 2025
  */
-public class Program 
+public class Program
 {
-    private final ProcedureDeclaration procedure;
-    private final Program childProgram;
+    private final Variable[] globals;
+    private final ProcedureDeclaration[] procedures;
     private final Statement mainBody;
 
     /**
-     * Constructs a Program with a procedure declaration and a child program.
+     * Constructs a Program with the specified global variables, procedure declarations, and program body.
      *
-     * Precondition: The procedure and childProgram parameters are not null.
-     * Postcondition: A new Program is created with the specified procedure and child program.
+     * Precondition: The vars, procDecs, and body parameters are not null.
+     * Postcondition: A new Program is created with the specified global variables, procedure declarations, and program body.
      *
-     * @param procedure the procedure declaration to include in this program
-     * @param childProgram the child program that follows the procedure
+     * @param vars the global variables declared at the top of the program
+     * @param procDecs the procedure declarations to include in this program
+     * @param body the program body that follows the procedures and global declarations
      */
-    public Program(ProcedureDeclaration procedure, Program childProgram) 
+    public Program(Variable[] vars, ProcedureDeclaration[] procDecs, Statement body) 
     {
-        this.procedure = procedure;
-        this.childProgram = childProgram;
-        this.mainBody = null;
+        this.globals = vars;
+        this.procedures = procDecs;
+        this.mainBody = body;
     }
 
     /**
-     * Constructs a Program with only a main body (no procedure declaration).
-     *
-     * Precondition: The mainBody parameter is not null.
-     * Postcondition: A new Program is created with only the main body.
-     *
-     * @param mainBody the main body of the program
-     */
-    public Program(Statement mainBody)
-    {
-        this.mainBody = mainBody;
-        this.childProgram = null;
-        this.procedure = null;
-    }
-    
-    /**
      * Executes the program in the given environment.
      * 
-     * Precondition: The environment is not null.
-     * Postcondition: If the program contains a procedure declaration, it executes
-     * the procedure and then the child program. Otherwise, it executes the main body.
-     *
      * @param env the environment in which to execute the program
      */
     public void exec(Environment env) 
     {
-        if (procedure != null)
+        if (procedures != null)
         {
-            procedure.exec(env);
-            childProgram.exec(env);
+            for (ProcedureDeclaration proc : procedures)
+            {
+                proc.exec(env);
+            }
         }
-        else
+        mainBody.exec(env);
+    }
+
+    /**
+     * Compiles the program into assembly code.
+     * Generates the data section with global variables, the text section with
+     * the main function, and includes the main body code.
+     * 
+     * @param e the emitter to use to compile the program
+     */
+    public void compile(Emitter e)
+    {
+        e.emit(".data");
+        e.emit("newline: .asciiz \"\\n\"");
+        if (globals != null)
         {
-            mainBody.exec(env);
+            for (Variable dec : globals)
+            {
+                e.emit("var" + dec.getName() + ": .word 0");
+            }
         }
+        e.emit(".text");
+        e.emit(".globl main");
+        e.emit("main:");
+        mainBody.compile(e);
+        e.emit(""); // adds a new line
+        e.emit("li $v0, 10");
+        e.emit("syscall");
+        e.close();
     }
 }

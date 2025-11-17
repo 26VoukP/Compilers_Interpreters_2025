@@ -27,8 +27,10 @@ public class ProcedureCall extends Expression
 
     /**
      * Executes the procedure call in the given environment.
+     * Looks up the procedure by name and runs it with the provided argument values.
      * 
      * @param env the environment in which to execute the procedure call
+     * @return the return value of the procedure
      */
     @Override
     public int eval(Environment env)

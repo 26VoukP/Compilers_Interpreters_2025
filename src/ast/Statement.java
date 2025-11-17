@@ -1,5 +1,6 @@
 package ast;
 
+import emitter.Emitter;
 import environment.Environment;
 
 /**
@@ -15,4 +16,14 @@ public abstract class Statement
      * @param env the environment in which to execute the statement
      */
     public abstract void exec(Environment env);
+
+    /**
+     * Compiles the statement into assembly code.
+     * 
+     * @param e the emitter to use to compile the statement
+     */
+    public void compile(Emitter e)
+    {
+        throw new RuntimeException("Statement compile method not implemented.");
+    }
 }

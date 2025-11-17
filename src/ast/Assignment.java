@@ -1,5 +1,6 @@
 package ast;
 
+import emitter.Emitter;
 import environment.Environment;
 
 /**
@@ -54,5 +55,17 @@ public class Assignment extends Statement
     public void exec(Environment env)
     {
         env.setVariable(var.getName(), expr.eval(env));
+    }
+
+    /**
+     * Compiles the assignment statement into assembly code.
+     * 
+     * @param e the emitter to use to compile the assignment
+     */
+    @Override
+    public void compile(Emitter e)
+    {
+        expr.compile(e);
+        e.emit("sw $v0, var" + var.getName());
     }
 }

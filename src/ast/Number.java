@@ -1,5 +1,6 @@
 package ast;
 
+import emitter.Emitter;
 import environment.Environment;
 
 /**
@@ -74,9 +75,25 @@ public class Number extends Expression
         return new Number(this.value / other.value);
     }
 
+    /**
+     * Evaluates the number and returns its value.
+     * @param env the environment in which to evaluate the number
+     * @return the value of the number
+     */
     @Override
     public int eval(Environment env) 
     {
         return value;
+    }
+
+    /**
+     * Compiles the number into assembly code.
+     * @param e the emitter to use to compile the number
+     */
+    @Override
+    public void compile(Emitter e)
+    {
+        e.emit("li $v0, " + value);
+        e.emit(""); // adds a new line
     }
 }
